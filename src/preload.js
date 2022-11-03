@@ -4,5 +4,7 @@
 const { ipcRenderer, contextBridge } = require('electron')
 
 contextBridge.exposeInMainWorld("app", {
-    getCurrentlyPlayingTrack: () => ipcRenderer.invoke("getCurrentlyPlayingTrack")
+    getCurrentlyPlayingTrack: () => ipcRenderer.invoke("getCurrentlyPlayingTrack"),
+    skipTrack: () => ipcRenderer.invoke("skipTrack"),
+    previousTrack: () => ipcRenderer.invoke("previousTrack")
 })

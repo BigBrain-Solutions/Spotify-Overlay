@@ -13,7 +13,14 @@
 		<div>
 			<span id="title"></span> <br>
 			<span id="artists"></span>
+
+			<div>
+				<img src="./prev.png" onclick="window.app.previousTrack()" width="24" height="24"/>
+				<img src="./skip.png" onclick="window.app.skipTrack()" width="24" height="24"/>
+			</div>
+
 		</div>
+
 	</div>
 
 
@@ -24,9 +31,7 @@
 			let artists = document.getElementById('artists')
 			let image = document.getElementById('image')
 
-			window.app.getCurrentlyPlayingTrack().then((value) => {
-				console.log(value)
-				
+			window.app.getCurrentlyPlayingTrack().then((value) => {				
 				image.src = value.image.url
 
 				let artistArr = []

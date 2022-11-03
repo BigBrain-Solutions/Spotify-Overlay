@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 const axios = require('axios')
 require('dotenv').config()
@@ -14,10 +14,12 @@ if (require('electron-squirrel-startup')) {
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 250,
+    width: 300,
     height: 100,
     frame: false,
     autoHideMenuBar: false,
+    x: 25,
+    y: 25,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -72,11 +74,35 @@ function getCurrentlyPlayingTrack() {
 
 }
 
+function skipTrack() {
+  axios({
+    method: 'POST',
+    url: URL + 'next',
+    headers: { Authorization: 'Bearer ' + TOKEN }
+  })
+}
+
+function previousTrack() {
+  axios({
+    method: 'POST',
+    url: URL + 'next',
+    headers: { Authorization: 'Bearer ' + TOKEN }
+  })
+}
+
 ipcMain.handle("getCurrentlyPlayingTrack", async (event) => {
 
   let data = getCurrentlyPlayingTrack()
 
   return data
+})
+
+ipcMain.handle("skipTrack", async (event) => {
+  skipTrack()
+})
+
+ipcMain.handle("previousTrack", async (event) => {
+  previousTrack()
 })
 
 // In this file you can include the rest of your app's specific main process
