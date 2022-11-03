@@ -1,0 +1,25 @@
+body {
+  -webkit-app-region: drag;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  background-color: rgb(24, 24, 24);
+
+  text-align: left;
+
+  overflow: hidden;
+}
+
+#artists {
+  color: rgb(161, 161, 161);
+  font-size: small;
+}
+
+#title {
+  color: white;
+}
+
+.container {
+  padding: 10px;
+  display: flex;
+  gap: 15px;
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+
+	<div class="container">
+		<img id="image" width="64" height="64">
+
+		<div>
+			<span id="title"></span> <br>
+			<span id="artists"></span>
+		</div>
+	</div>
+
+
+    <script>
+
+		function loop() {
+			let title = document.getElementById('title')
+			let artists = document.getElementById('artists')
+			let image = document.getElementById('image')
+
+			window.app.getCurrentlyPlayingTrack().then((value) => {
+				console.log(value)
+				
+				image.src = value.image.url
+
+				let artistArr = []
+
+				value.artists.forEach(artist => {
+					artistArr.push(artist.name)
+				});
+
+				artists.innerText = artistArr.join(', ')
+
+				title.innerText = value.title
+			})
+		}
+
+		setInterval(loop, 500)
+
+    </script>
+
+  </body>
+</html>
