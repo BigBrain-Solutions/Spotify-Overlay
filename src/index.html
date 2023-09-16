@@ -16,7 +16,9 @@
 
 			<div>
 				<img src="./prev.png" onclick="window.app.previousTrack()" width="24" height="24"/>
+				<img src="./pause-btn.png" onclick="hanldePlayback()" width="32" height="32" id="playback"  />
 				<img src="./skip.png" onclick="window.app.skipTrack()" width="24" height="24"/>
+				<img src="" width="32" onclick="handleSaved()" height="32" id="saved" />
 			</div>
 
 		</div>
@@ -26,11 +28,14 @@
 
     <script>
 
-		function loop() {
-			let title = document.getElementById('title')
-			let artists = document.getElementById('artists')
-			let image = document.getElementById('image')
+		let title = document.getElementById('title')
+		let artists = document.getElementById('artists')
+		let image = document.getElementById('image')
+		let saved = document.getElementById('saved')
 
+		let savedVal = false;
+
+		function loop() {
 			window.app.getCurrentlyPlayingTrack().then((value) => {				
 				image.src = value.image.url
 
@@ -43,9 +48,48 @@
 				artists.innerText = artistArr.join(', ')
 
 				title.innerText = value.title
+
+				changePlaybackState(!value.is_playing)
+
+				window.app.checkSavedTrack().then((value) => {
+					savedVal = value.saved;
+
+					if (value.saved) {
+						saved.src = "./saved.png"
+					}
+					else {
+						saved.src = "./not-saved.png"
+					}
+				})
 			})
 		}
 
+		function changePlaybackState(value) {
+			let playback = document.getElementById('playback')
+
+			if (value === true) {
+				playback.src = './resume-btn.png'
+			}
+			else {
+				playback.src = './pause-btn.png'
+			}
+		}
+
+		function hanldePlayback() {
+			window.app.pauseTrack().then((value) => {
+				changePlaybackState(value)
+			})
+		}
+
+		function handleSaved() {
+			if (!savedVal) {
+				window.app.saveTrack()
+			}
+			else {
+				window.app.deleteTrack()
+			}
+		}
+		
 		setInterval(loop, 500)
 
     </script>

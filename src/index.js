@@ -56,6 +56,10 @@ const config = fs.readFileSync(filePath, 'utf-8');
 const data = JSON.parse(config);
 const TOKEN = data.token;
 
+let paused = false;
+let currPlayingId = ""
+let isSaved = false;
+
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -126,14 +130,52 @@ function getCurrentlyPlayingTrack() {
     headers: { Authorization: 'Bearer ' + TOKEN }
   })
     .then(function (response) {
+      paused = !response.data.is_playing
+      currPlayingId = response.data.item.id
+
       return {
         artists: response.data.item.album.artists,
         title: response.data.item.name,
-        image: response.data.item.album.images[2]
+        image: response.data.item.album.images[2],
+        timestamp: response.data.timestamp,
+        progress_ms: response.data.progress_ms,
+        is_playing: response.data.is_playing,
       }
     });
 
 }
+
+function checkSavedTrack() {
+  return axios({
+    method: 'GET',
+    url: 'https://api.spotify.com/v1/me/tracks/contains?ids=' + currPlayingId,
+    headers: { Authorization: 'Bearer ' + TOKEN }
+  }).then(response => {
+    isSaved = response.data[0]
+    return {
+      saved: response.data[0]
+    }
+  }).catch(err => {console.log(err)})
+}
+
+function saveTrack() {
+  if (isSaved) return;
+
+  axios({
+    method: 'PUT',
+    url: 'https://api.spotify.com/v1/me/tracks?ids=' + currPlayingId,
+    headers: { Authorization: 'Bearer ' + TOKEN }
+  })
+}
+
+function deleteTrack() {
+  axios({
+    method: 'DELETE',
+    url: 'https://api.spotify.com/v1/me/tracks?ids=' + currPlayingId,
+    headers: { Authorization: 'Bearer ' + TOKEN }
+  })
+}
+
 
 function skipTrack() {
   axios({
@@ -150,6 +192,45 @@ function previousTrack() {
     headers: { Authorization: 'Bearer ' + TOKEN }
   })
 }
+
+function pauseTrack() {
+  if (!paused) {
+    axios({
+      method: 'PUT',
+      url: 'https://api.spotify.com/v1/me/player/pause',
+      headers: { Authorization: 'Bearer ' + TOKEN }
+    }).then(response => {
+      paused = true;
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+  else {
+    axios({
+      method: 'PUT',
+      url: 'https://api.spotify.com/v1/me/player/play',
+      headers: { Authorization: 'Bearer ' + TOKEN }
+    }).then(response => {
+      paused = false;
+    })
+  }
+}
+
+ipcMain.handle("checkSavedTrack", async (event) => {
+
+  let data = checkSavedTrack()
+
+  return data
+})
+
+ipcMain.handle("saveTrack", async (event) => {
+  saveTrack();
+})
+
+ipcMain.handle("deleteTrack", async (event) => {
+  deleteTrack();
+})
+
 
 ipcMain.handle("getCurrentlyPlayingTrack", async (event) => {
 
@@ -168,6 +249,12 @@ ipcMain.handle("skipTrack", async (event) => {
 
 ipcMain.handle("previousTrack", async (event) => {
   previousTrack()
+})
+
+ipcMain.handle("pauseTrack", async (event) => {
+  pauseTrack()
+  console.log(paused)
+  return paused;
 })
 
 // In this file you can include the rest of your app's specific main process
