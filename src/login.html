@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <style>
+        div {
+            display: flex;
+            height: 90vh;
+
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <button onclick="login()">Login with Spotify</button>
+    </div>
+
+    <script>
+
+        const login = () => {
+            let url = "http://localhost:3000/callback"
+            let scope = "user-read-currently-playing user-modify-playback-state"
+            const encodedScope = encodeURI(scope);
+            const encoded = encodeURI(url);
+            window.location.replace(`https://accounts.spotify.com/authorize?response_type=token&client_id=ce2cf5b6fc694345844dc8dc500ae46d&redirect_uri=${encoded}&scope=${encodedScope}`)
+        }        
+
+    </script>
+</body>
+</html>

@@ -3,8 +3,13 @@
 
 const { ipcRenderer, contextBridge } = require('electron')
 
+ipcRenderer.on('spotify-auth-data', (event, accessToken) => {
+    console.log(accessToken)
+});
+
 contextBridge.exposeInMainWorld("app", {
     getCurrentlyPlayingTrack: () => ipcRenderer.invoke("getCurrentlyPlayingTrack"),
     skipTrack: () => ipcRenderer.invoke("skipTrack"),
-    previousTrack: () => ipcRenderer.invoke("previousTrack")
+    previousTrack: () => ipcRenderer.invoke("previousTrack"),
+    login: () => ipcRenderer.invoke('login')
 })

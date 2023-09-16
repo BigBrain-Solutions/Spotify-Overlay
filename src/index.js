@@ -1,15 +1,60 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
 const axios = require('axios')
 require('dotenv').config()
 
-const TOKEN = process.env.SPOTIFY_TOKEN
 const URL = "https://api.spotify.com/v1/me/player/"
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
+//#region FS
+function createFolderIfNull(folderPath) {
+  if (!folderPath) {
+    console.error('Path is null or undefined');
+    return;
+  }
+  
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+    console.log(`Folder created at: ${folderPath}`);
+  } else {
+    console.log(`Folder already exists at: ${folderPath}`);
+  }
+}
+
+function createConfigFileIfNull(filePath, content) {
+  if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, content, 'utf-8');
+      console.log(`File created at: ${filePath}`);
+  } else {
+      console.log(`File already exists at: ${filePath}`);
+  }
+}
+
+function openConfigFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    const configFileContents = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(configFileContents);
+  } else {
+    console.error(`File does not exist at: ${filePath}`);
+    return null;
+  }
+}
+//#endregion
+
+const spotifyOverlayPath = path.join(os.homedir(), 'AppData', 'Roaming', 'spotify-overlay');
+createFolderIfNull(spotifyOverlayPath)
+
+const filePath = path.join(spotifyOverlayPath, 'config.json');
+createConfigFileIfNull(filePath, JSON.stringify({"token": ""}))
+
+const config = fs.readFileSync(filePath, 'utf-8');
+const data = JSON.parse(config);
+const TOKEN = data.token;
 
 const createWindow = () => {
   // Create the browser window.
@@ -25,6 +70,16 @@ const createWindow = () => {
     },
 
   });
+
+  let secondWindow = new BrowserWindow({
+      width: 800, 
+      height: 600,
+      webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    }  
+    });
+  secondWindow.loadFile(path.join(__dirname, 'login.html')); // Load your HTML file here
+  secondWindow.webContents.openDevTools();
 
   mainWindow.setAlwaysOnTop(true);
 
@@ -57,7 +112,13 @@ app.on('activate', () => {
   }
 });
 
+function login() {
+  console.log("login")
+}
+
 function getCurrentlyPlayingTrack() {
+
+  if (!TOKEN || TOKEN === "") return;
 
   return axios({
     method: 'GET',
@@ -95,6 +156,10 @@ ipcMain.handle("getCurrentlyPlayingTrack", async (event) => {
   let data = getCurrentlyPlayingTrack()
 
   return data
+})
+
+ipcMain.handle("login", async (event) => {
+  login()
 })
 
 ipcMain.handle("skipTrack", async (event) => {
